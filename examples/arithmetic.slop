@@ -1,0 +1,3 @@
+— Operator precedence: multiplication before addition.
+hallucinate(1 + 2 * 3)✨
+— prints 7
