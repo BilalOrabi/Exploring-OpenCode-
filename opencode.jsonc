@@ -3,10 +3,8 @@
   "model": "opencode/deepseek-v4.1-flash-free",
   // Ordered rules that allow, deny, or ask before a tool is used.
   "permissions": [
-    {
-      "action": "shell",
-      "resource": "bootdev run *",
-      "effect": "ask"
-    }
+    { "action": "shell", "resource": "*", "effect": "ask" },
+    { "action": "shell", "resource": "bootdev run *", "effect": "allow" },
+    { "action": "run_slop", "resource": "*", "effect": "allow" }
   ]
 }
