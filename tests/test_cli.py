@@ -34,3 +34,59 @@ def test_missing_file_and_usage():
     missing = run_cli(str(ROOT / "nope.slop"))
     assert missing.returncode == 2
     assert "could not read" in missing.stderr
+
+
+def test_check_accepts_a_valid_file_without_executing_it(tmp_path: Path):
+    program = tmp_path / "ok.slop"
+    program.write_text("hallucinate(“never printed”)✨\n", encoding="utf-8")
+    completed = run_cli("--check", str(program))
+    assert completed.returncode == 0
+    assert completed.stdout == ""
+    assert completed.stderr == ""
+
+
+def test_check_ignores_runtime_errors(tmp_path: Path):
+    program = tmp_path / "runtime.slop"
+    program.write_text("hallucinate(missing)✨\n", encoding="utf-8")
+    completed = run_cli("--check", str(program))
+    assert completed.returncode == 0
+    assert completed.stdout == ""
+
+
+def test_check_reports_syntax_errors(tmp_path: Path):
+    program = tmp_path / "broken.slop"
+    program.write_text("slop x = 1\n", encoding="utf-8")
+    completed = run_cli("--check", str(program))
+    assert completed.returncode == 1
+    assert completed.stdout == ""
+    assert (
+        completed.stderr
+        == "SlopLang syntax error at line 2: expected ✨ after variable declaration, "
+        "but reached end of file\n"
+    )
+    assert "Traceback" not in completed.stderr
+
+
+def test_division_by_zero_is_a_clean_runtime_error(tmp_path: Path):
+    program = tmp_path / "divide.slop"
+    program.write_text("hallucinate(“before”)✨\nhallucinate(1 / 0)✨\n", encoding="utf-8")
+    completed = run_cli(str(program))
+    assert completed.returncode == 1
+    assert completed.stdout == "before\n"
+    assert completed.stderr == "SlopLang runtime error at line 2: division by zero\n"
+    assert "Traceback" not in completed.stderr
+
+
+def test_check_reports_lexical_errors(tmp_path: Path):
+    program = tmp_path / "quotes.slop"
+    program.write_text('hallucinate("hi")✨\n', encoding="utf-8")
+    completed = run_cli("--check", str(program))
+    assert completed.returncode == 1
+    assert "SlopLang lexical error at line 1" in completed.stderr
+
+
+def test_check_flag_after_the_file_and_missing_file():
+    completed = run_cli(str(ROOT / "examples/hello.slop"), "--check")
+    assert completed.returncode == 0
+    assert completed.stdout == ""
+    assert run_cli("--check").returncode == 2

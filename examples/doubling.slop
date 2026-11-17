@@ -1,0 +1,6 @@
+— clanker declares a function; ship returns its result.
+clanker double(number) {
+    ship number * 2✨
+}
+
+hallucinate(double(13))✨   — 26

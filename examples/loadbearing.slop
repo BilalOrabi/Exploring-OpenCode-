@@ -1,0 +1,10 @@
+— loadbearing declares a value that cannot be reassigned.
+loadbearing LIMIT = 3✨
+slop count = 0✨
+
+ralph count < LIMIT {
+    hallucinate(count)✨
+    count = count + 1✨
+}
+
+hallucinate(“done”)✨

@@ -50,8 +50,17 @@ def test_equality_never_coerces(expression: str, expected: str):
     assert run(source) == f"{expected}\n"
 
 
-def test_division_by_zero_is_a_runtime_error():
-    assert fails("hallucinate(1 / 0)✨") == "SlopLang runtime error at line 1: division by zero"
+@pytest.mark.parametrize("expression", ["1 / 0", "0 / 0", "1 / (2 - 2)", "-7 / 0"])
+def test_division_by_zero_is_a_runtime_error(expression: str):
+    assert fails(f"hallucinate({expression})✨") == (
+        "SlopLang runtime error at line 1: division by zero"
+    )
+
+
+def test_division_by_zero_reports_the_operator_line():
+    source = """slop zero = 0✨
+hallucinate(1 / zero)✨"""
+    assert fails(source) == "SlopLang runtime error at line 2: division by zero"
 
 
 def test_short_circuit_skips_right_operand():
@@ -76,6 +85,53 @@ def test_assignment_walks_up_the_scope_chain():
 }
 hallucinate(x)✨"""
     assert run(source) == "2\n"
+
+
+def test_loadbearing_values_can_be_read():
+    source = """loadbearing LIMIT = 100✨
+slop score = 10✨
+score = score + LIMIT✨
+hallucinate(score)✨"""
+    assert run(source) == "110\n"
+
+
+def test_assigning_to_loadbearing_is_a_runtime_error():
+    source = """loadbearing LIMIT = 100✨
+LIMIT = 200✨"""
+    assert fails(source) == "SlopLang runtime error at line 2: cannot assign to loadbearing 'LIMIT'"
+
+
+def test_loadbearing_cannot_be_assigned_from_an_inner_block():
+    source = """loadbearing LIMIT = 100✨
+{
+    {
+        LIMIT = 200✨
+    }
+}"""
+    assert fails(source) == "SlopLang runtime error at line 4: cannot assign to loadbearing 'LIMIT'"
+
+
+def test_loadbearing_follows_slop_scoping():
+    source = """loadbearing LIMIT = 100✨
+{
+    slop LIMIT = 5✨
+    LIMIT = LIMIT + 1✨
+    hallucinate(LIMIT)✨
+}
+hallucinate(LIMIT)✨"""
+    assert run(source) == "6\n100\n"
+
+
+def test_loadbearing_inside_a_clanker():
+    source = """clanker capped(n) {
+    loadbearing MAX = 3✨
+    vibe n > MAX {
+        ship MAX✨
+    }
+    ship n✨
+}
+hallucinate(capped(10))✨"""
+    assert run(source) == "3\n"
 
 
 def test_loop_body_is_a_fresh_scope_each_iteration():
