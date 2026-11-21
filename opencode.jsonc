@@ -80,6 +80,24 @@
     { "action": "shell", "resource": "mkfs*", "effect": "deny" },
     { "action": "shell", "resource": "dd if=* of=/dev/*", "effect": "deny" },
     { "action": "shell", "resource": "shutdown *", "effect": "deny" },
-    { "action": "shell", "resource": "reboot *", "effect": "deny" }
-  ]
+    { "action": "shell", "resource": "reboot *", "effect": "deny" },
+
+    // Subagents: block the explore agent outright.
+    { "action": "subagent", "resource": "explore", "effect": "deny" },
+
+    // .env files are never readable; overrides the earlier "ask" rule.
+    { "action": "read", "resource": "*.env", "effect": "deny" }
+  ],
+  // Ignore playground log churn so it does not trigger watcher events.
+  "watcher": {
+    "ignore": ["logs/**"],
+  },
+  // Compact automatically, preserving recent tokens with a token buffer.
+  "compaction": {
+    "auto": true,
+    "keep": {
+      "tokens": 10000,
+    },
+    "buffer": 20000,
+  },
 }
