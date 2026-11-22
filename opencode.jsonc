@@ -9,6 +9,9 @@
     { "action": "*", "resource": "*", "effect": "allow" },
     { "action": "shell", "resource": "*", "effect": "allow" },
 
+    // Loading this skill requires explicit approval.
+    { "action": "skill", "resource": "create-test-program", "effect": "ask" },
+
     // Secrets and credentials: always ask first.
     { "action": "read", "resource": "*.env", "effect": "ask" },
     { "action": "read", "resource": "*.env.*", "effect": "ask" },

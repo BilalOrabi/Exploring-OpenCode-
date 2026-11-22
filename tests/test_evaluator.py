@@ -183,10 +183,16 @@ hallucinate(find())✨"""
     assert run(source) == "3\n"
 
 
+def test_unary_not_flips_booleans():
+    assert run("hallucinate(!✅, !❌, !!✅)✨") == "❌ ✅ ✅\n"
+
+
 @pytest.mark.parametrize(
     ("source", "message"),
     [
         ("hallucinate(-“a”)✨", "operand of unary '-' must be a number, got string"),
+        ("hallucinate(!1)✨", "operand of unary '!' must be a boolean, got number"),
+        ("hallucinate(!“a”)✨", "operand of unary '!' must be a boolean, got string"),
         ("hallucinate(“a” < “b”)✨", "operands of '<' must be numbers, got string and string"),
         ("hallucinate(1 - ✅)✨", "operands of '-' must be numbers, got number and boolean"),
         ("ralph 0 { }", "ralph condition must be a boolean, got number"),
