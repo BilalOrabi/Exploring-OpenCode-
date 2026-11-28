@@ -103,4 +103,19 @@
     },
     "buffer": 20000,
   },
+  // Public, rate-limited Context7 endpoint: no API key or auth headers.
+  // Notion uses OAuth: sign in via /mcps on first use.
+  "mcp": {
+    "servers": {
+      "context7": {
+        "type": "remote",
+        "url": "https://mcp.context7.com/mcp",
+      },
+      "notion": {
+        "type": "remote",
+        "url": "https://mcp.notion.com/mcp",
+        "disabled": true,
+      },
+    },
+  },
 }

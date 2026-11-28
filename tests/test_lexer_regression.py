@@ -5,6 +5,7 @@ import pytest
 from sloperator.errors import LexicalError
 from sloperator.lexer import tokenize
 from sloperator.lexer.tokens import TokenType
+from sloperator.runner import run_source
 
 
 def test_escape_followed_by_raw_newline_is_a_lexical_error():
@@ -23,6 +24,36 @@ def test_escape_followed_by_raw_newline_is_a_lexical_error():
     # escapes the character instead.
     assert info.value.message == "unknown escape sequence '\\\n'"
     assert str(info.value) == "SlopLang lexical error at line 1: unknown escape sequence '\\\n'"
+
+
+def test_variable_names_may_contain_digits_after_the_first_character():
+    source = "slop score2 = 40✨\nscore2 = score2 + 2✨\nhallucinate(score2)✨"
+
+    result = run_source(source)
+
+    assert result.stdout == "42\n"
+    assert result.stderr == ""
+    assert result.exit_code == 0
+
+
+def test_function_and_parameter_names_may_contain_digits_after_the_first_character():
+    source = "clanker add2(a1, b2) {\n    ship a1 + b2✨\n}\nhallucinate(add2(40, 2))✨"
+
+    result = run_source(source)
+
+    assert result.stdout == "42\n"
+    assert result.stderr == ""
+    assert result.exit_code == 0
+
+
+def test_identifiers_cannot_start_with_a_digit():
+    result = run_source("slop 2x = 1✨")
+
+    assert (
+        result.stderr
+        == "SlopLang syntax error at line 1: expected a variable name after 'slop', found '2'\n"
+    )
+    assert result.exit_code == 1
 
 
 def test_tokens_after_a_comment_keep_their_real_line():
