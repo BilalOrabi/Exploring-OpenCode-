@@ -10,6 +10,7 @@ EXAMPLES_DIR = Path(__file__).resolve().parent.parent / "examples"
 
 EXPECTED_OUTPUTS: dict[str, str] = {
     "equality.slop": "✅\n❌\n❌\n",
+    "short-circuit.slop": "❌\n✅\n",
 }
 
 
